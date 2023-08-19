@@ -41,30 +41,17 @@ def getSpreadsheet(workbook, source):
     # Insert player info into spreadsheet
     row = 1
     for player in rankings:
-        # Remove commas
-        for char in player:
-            if char == ",":
-                player = player.replace(char, "")
+        playerInfo = player.split(", ")
+        # Split first element into rank and player name components
+        playerInfo[0] = playerInfo[0].replace(".", "", 1)
+        playerInfo[0] = playerInfo[0].split(" ", 1)
+        playerInfo.insert(1, playerInfo[0][1])  # Add player name as its own element
+        playerInfo[0] = playerInfo[0][0]  # Ranking
+        playerInfo[0] = int(playerInfo[0])  # Remove period after ranking
 
-        # Split into rank, first/last name, position, and team
-        if source == "NHL.com":
-            playerInfo = player.split(" ")[:5]
-        else:
-            playerInfo = player.split(" ")[:-1]
-        playerInfo[0] = int(playerInfo[0][:-1])  # Remove period after ranking
-
-        if len(playerInfo) == 5:
-            # Combine first and last name into 1 element
-            playerInfo[1] = "{0} {1}".format(playerInfo[1], playerInfo[2])
-            playerInfo.pop(2)
-        else:
-            # Edge Case (player has multiple first or last names -> eg. Trevor van Riemsdyk)
-            playerInfo[1] = "{0} {1} {2}".format(
-                playerInfo[1], playerInfo[2], playerInfo[3]
-            )
-            playerInfo.pop(2)
-            playerInfo.pop(2)
-
+        # Remove excess information from data (eg. health status, position ranking)
+        playerInfo[-1] = playerInfo[-1].split(" ")
+        playerInfo[-1] = playerInfo[-1][0]
         if source == "ESPN":
             playerInfo[-1] = playerInfo[-1].upper()  # Uppercase team abbreviations
 
