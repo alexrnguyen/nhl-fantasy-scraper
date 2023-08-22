@@ -1,6 +1,6 @@
 # nhl-fantasy-scraper
 
-A data scraper that extracts fantasy hockey rankings from NHL.com and ESPN into a spreadsheet. Built using Python, Selenium, and XlsxWriter.
+A data scraper that extracts fantasy hockey rankings from NHL.com and ESPN into a spreadsheet. Using the extracted rankings, the program calculates each player's average ranking and writes a sheet containing the average rankings. Built using Python, Selenium, and XlsxWriter.
 
 ## How to use
 1. Clone this repository to create a local repository on your computer
