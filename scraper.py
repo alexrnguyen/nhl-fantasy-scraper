@@ -71,25 +71,29 @@ def getAverageRankings(workbook):
     numSheets = readOnlyWorkbook.nsheets
     for i in range(numSheets):
         worksheet = readOnlyWorkbook.sheet_by_index(i)
+        # Do not read contents of average rankings
         if readOnlyWorkbook.sheet_names()[i] == "Average Rankings":
             continue
         for row in range(1, worksheet.nrows):
             if rankings.get(worksheet.cell_value(row, 1)) is None:
+                # Create an array associated with the player
                 rankings[worksheet.cell_value(row, 1)] = [worksheet.cell_value(row, 0)]
             else:
+                # Add the ranking to the existing array for the player
                 rankings[worksheet.cell_value(row, 1)].append(
                     worksheet.cell_value(row, 0)
                 )
 
+    # Create a dictionary containing each player's average ranking
     averageRankings = {}
     for player in rankings.keys():
         rankingArray = rankings.get(player)
         averageRankings[player] = sum(rankingArray) / len(rankingArray)
 
+    # Add average rankings to a new worksheet
     avgRankingsWorksheet = workbook.add_worksheet("Average Rankings")
     colNames = ["Name", "Average Rank"]
     avgRankingsWorksheet.write_row(0, 0, colNames)
-
     row = 1
     for player in averageRankings.keys():
         playerInfo = [player, averageRankings.get(player)]
