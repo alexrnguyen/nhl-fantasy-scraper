@@ -96,13 +96,17 @@ def get_spreadsheet(workbook, source):
                 ].upper()  # Uppercase team abbreviations
 
             worksheet.write_row(row, 0, player_info)
-            worksheet.autofilter("A1:D1")
 
         else:
             player_info = [row, player]
             worksheet.write_row(row, 0, player_info)
-            worksheet.autofilter("A1:B1")
         row += 1
+
+    if source != "Yahoo":
+        worksheet.autofilter("A1:D301")
+    else:
+        worksheet.autofilter("A1:B301")
+    worksheet.autofit()
 
 
 def get_average_rankings(workbook):
@@ -141,7 +145,8 @@ def get_average_rankings(workbook):
         avg_rankings_worksheet.write_row(row, 0, player_info)
         row += 1
 
-    avg_rankings_worksheet.autofilter("A1:B1")
+    avg_rankings_worksheet.autofilter("A1:B501")
+    avg_rankings_worksheet.autofit()
 
 
 if __name__ == "__main__":
