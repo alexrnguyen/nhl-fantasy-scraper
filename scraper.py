@@ -5,10 +5,11 @@ from selenium.webdriver.support import expected_conditions as EC
 import xlsxwriter
 import xlrd
 
+file_name = "nhl-fantasy-rankings-2024.xlsx"
 
-# Create a new Excel spreadsheet
+# Create a new Excel workbook
 def create_workbook():
-    workbook = xlsxwriter.Workbook("nhl-fantasy-rankings-2023.xlsx")
+    workbook = xlsxwriter.Workbook(file_name)
     return workbook
 
 
@@ -51,14 +52,10 @@ def get_spreadsheet(workbook, source):
             next_page_button.click()
         output = output.strip()  # Remove new line character after last player
     else:
-        url = "https://www.espn.com/fantasy/hockey/story/_/id/37963929/top-250-fantasy-nhl-rankings-scorers-goalies-2023-24"
+        url = "https://www.espn.com/fantasy/hockey/story/_/id/41329930/espn-nhl-fantasy-hockey-draft-rankings-2024-25"
         browser.get(url)
         # Find the highest ranked player (in each half)
-        first_half = browser.find_element(By.XPATH, "//p[contains(text(), '1. ')]").text
-        second_half = browser.find_element(
-            By.XPATH, "//p[contains(text(), '151. ')]"
-        ).text
-        output = "{0}\n{1}".format(first_half, second_half)
+        output = browser.find_element(By.XPATH, "//p[contains(text(), '1. ')]").text
 
     browser.quit()
 
@@ -76,7 +73,7 @@ def get_spreadsheet(workbook, source):
     row = 1
     for player in rankings:
         # Player information on Yahoo's website is formatted quite differently. Handle Yahoo sheet in else clause
-        if source != "Yahoo":
+        if source == "NHL.com":
             player_info = player.split(", ")
             # Split first element into rank and player name components
             player_info[0] = player_info[0].replace(".", "", 1)
@@ -84,22 +81,37 @@ def get_spreadsheet(workbook, source):
             player_info.insert(
                 1, player_info[0][1]
             )  # Add player name as its own element
-            player_info[0] = player_info[0][0]  # Ranking
-            player_info[0] = int(player_info[0])  # Remove period after ranking
+            player_info[0] = player_info[0][0] # Ranking
+            player_info[0] = int(player_info[0]) # Remove period after ranking
 
             # Remove excess information from data (eg. health status, position ranking)
             player_info[-1] = player_info[-1].split(" ")
             player_info[-1] = player_info[-1][0]
-            if source == "ESPN":
-                player_info[-1] = player_info[
-                    -1
-                ].upper()  # Uppercase team abbreviations
 
-            worksheet.write_row(row, 0, player_info)
+        elif source == "ESPN":
+            player_info = player.split(", ")
+            # Split first element into rank and player name components
+            player_info[0] = player_info[0].replace(".", "", 1)
+            player_info[0] = player_info[0].split(" ", 1)
+            player_info.insert(
+                1, player_info[0][1]
+            )  # Add player name as its own element
+            player_info[0] = player_info[0][0] # Ranking
+            player_info[0] = int(player_info[0]) # Remove period after ranking
+
+            # Remove excess information from data (eg. health status, position ranking)
+            player_info[-1] = player_info[-1].split(" ")
+            team = player_info[-1][0].upper() # Uppercase team abbreviations
+            position = player_info[-1][1][player_info[-1][1].find("(")+1 : player_info[-1][1].find(")")]
+            player_info.remove(player_info[-1])
+            position = ''.join([i for i in position if not i.isdigit()])
+            player_info.append(position)
+            player_info.append(team)
 
         else:
             player_info = [row, player]
-            worksheet.write_row(row, 0, player_info)
+        
+        worksheet.write_row(row, 0, player_info)
         row += 1
 
     if source != "Yahoo":
@@ -111,7 +123,7 @@ def get_spreadsheet(workbook, source):
 
 def get_average_rankings(workbook):
     rankings = {}
-    read_only_workbook = xlrd.open_workbook("nhl-fantasy-rankings-2023.xlsx")
+    read_only_workbook = xlrd.open_workbook(file_name)
 
     num_sheets = read_only_workbook.nsheets
     for i in range(num_sheets):
